@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
+const redis = require('redis');
+const util = require('util');
 const requireLogin = require('../middlewares/requireLogin');
 
 const Blog = mongoose.model('Blog');
+const redisUrl = 'redis://127.0.0.1:6379'
 
 module.exports = app => {
   app.get('/api/blogs/:id', requireLogin, async (req, res) => {
@@ -14,6 +17,10 @@ module.exports = app => {
   });
 
   app.get('/api/blogs', requireLogin, async (req, res) => {
+    const client = redis.createClient(redisUrl);
+    client.get = util.promisify(client.get);
+    const cachedBlogs = await client.get(req.user.id);
+
     const blogs = await Blog.find({ _user: req.user.id });
 
     res.send(blogs);
