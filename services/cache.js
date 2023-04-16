@@ -37,7 +37,7 @@ mongoose.Query.prototype.exec = async function () {
 
     const result = await exec.apply(this, arguments);
 
-    client.set(key, JSON.stringify(result));
+    client.set(key, JSON.stringify(result), 'EX', 60);
 
     return result;
 }
