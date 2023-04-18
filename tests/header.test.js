@@ -1,4 +1,7 @@
 const puppeteer = require('puppeteer');
+const Buffer = require('safe-buffer').Buffer
+const Keygrip = require('keygrip');
+const keys = require('../config/keys');
 
 let browser, page;
 
@@ -26,4 +29,20 @@ test('clicking login starts oauth flow', async () => {
     const url = await page.url();
 
     expect(url).toMatch(/accounts\.google\.com/)
+});
+
+test('when sign in, shows logout button', async () => {
+    const id = '5a85dc351cd349288671a36p';
+    const sessionObj = {
+        passport: {
+            user: id
+        }
+    };
+    const sessionString = Buffer.from(JSON.stringify(sessionObj)).toString('base64');
+    const keygrip = new Keygrip([key.cookieKey]);
+    const sig = keygrip.sign('session=' + sessionString);
+
+    await page.setCookie({name: 'session', value: sessionString});
+    await page.setCookie({name: 'session.sig', value: sig});
+    await page.goto('localhost:3000');
 })
