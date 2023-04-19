@@ -2,6 +2,9 @@ const Page = require('./helpers/page');
 
 let page;
 
+const myTitle = 'My test title';
+const myConent = 'My test content';
+
 beforeEach(async () => {
     page = await Page.build();
     await page.goto('localhost:3000');
@@ -24,9 +27,6 @@ describe('When logged in', async () => {
     });
 
     describe('Using valid input', async () => {
-        const myTitle = 'My test title';
-        const myConent = 'My test content';
-
         beforeEach(async () => {
             await page.type('.title input', myTitle);
             await page.type('.content input', myConent);
@@ -64,4 +64,39 @@ describe('When logged in', async () => {
             expect(contentError).toEqual('You must provide a value');
         })
     })
+})
+
+describe('When user is not logged in', async () => {
+    test('User cannot create blog post', async () => {
+        const result = await page.evaluate(
+            () => {
+                return fetch('/api/blogs', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title: myTitle, content: myConent })
+                }).then(res => res.json());
+            }
+        );
+
+        expect(result).toEqual({ error: 'You must log in!' })
+    });
+
+    test('User cannot get blogs', async () => {
+        const result = await page.evaluate(
+            () => {
+                return fetch('/api/blogs', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => res.json());
+            }
+        );
+
+        expect(result).toEqual({ error: 'You must log in!' })
+    });
 })
