@@ -23,6 +23,34 @@ describe('When logged in', async () => {
         expect(label).toEqual('Blog title')
     });
 
+    describe('Using valid input', async () => {
+        const myTitle = 'My test title';
+        const myConent = 'My test content';
+
+        beforeEach(async () => {
+            await page.type('.title input', myTitle);
+            await page.type('.content input', myConent);
+            await page.click('form button')
+        })
+
+        test('submiting takes user to review screen', async () => {
+            const text = await page.getContentsOf('h5');
+
+            expect(text).toEqual('Please confirm your entries');
+        });
+
+        test('submiting then saving adds blogs to index page', async () => {
+            await page.click('button.green');
+            await page.waitFor('.card');
+
+            const title = await page.getContentsOf('.card-title');
+            const content = await page.getContentsOf('p');
+
+            expect(title).toEqual(myTitle);
+            expect(content).toEqual(myConent);
+        })
+    })
+
     describe('Using invalid inputs', async () => {
         beforeEach(async () => {
             await page.click('form button')
@@ -31,7 +59,7 @@ describe('When logged in', async () => {
         test('the form shows an error message', async () => {
             const titleError = await page.getContentsOf('.title .red-text');
             const contentError = await page.getContentsOf('.content .red-text');
-            
+
             expect(titleError).toEqual('You must provide a value');
             expect(contentError).toEqual('You must provide a value');
         })
