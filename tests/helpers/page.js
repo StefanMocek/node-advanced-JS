@@ -23,17 +23,30 @@ class CustomPage {
 
     async login() {
         const user = await userFactory();
-        const {session, sig} = sessionFactory(user);
-    
-        await this.page.setCookie({name: 'session', value: session});
-        await this.page.setCookie({name: 'session.sig', value: sig});
+        const { session, sig } = sessionFactory(user);
+
+        await this.page.setCookie({ name: 'session', value: session });
+        await this.page.setCookie({ name: 'session.sig', value: sig });
         await this.page.goto('localhost:3000/blogs');
         await this.page.waitFor('a[href="/auth/logout"]');
     }
 
     async getContentsOf(selector) {
         return this.page.$eval(selector, el => el.innerHTML);
-    }
+    };
+
+    async get(path) {
+        return await this.page.evaluate(
+            (_path) => {
+                return fetch(_path, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => res.json());
+            }, path);
+    };
 };
 
 module.exports = CustomPage;
