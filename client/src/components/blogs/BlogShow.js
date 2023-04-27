@@ -15,6 +15,7 @@ class BlogShow extends Component {
             'https://s3-eu-central-1.amazonaws.com/my-blog-sm/' +
             this.props.blog.imageUrl
           }
+          alt={this.props.blog.imageAltText || ""}
         />
       );
     }
